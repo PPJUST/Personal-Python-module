@@ -1,56 +1,3 @@
-# 导入相关的库
-import os
-import re
-import time
-
-import magic
-from PySide2.QtCore import *
-from PySide2.QtGui import *
-from PySide2.QtWidgets import *
-
-
-# Qt类
-class DropLabel(QLabel):
-    """Qt的QLabel类复写，拖入文件后发送拖入文件的列表信号"""
-    dropSignal = Signal(list)
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setAcceptDrops(True)  # 设置可拖入
-
-    def dragEnterEvent(self, event):
-        if event.mimeData().hasUrls():
-            event.accept()
-
-    def dropEvent(self, event):
-        if event.mimeData().hasUrls():
-            urls = event.mimeData().urls()
-            drop_path = [url.toLocalFile() for url in urls]  # 获取多个文件的路径的列表
-            self.dropSignal.emit(drop_path)  # 发送文件列表信号
-
-
-class DropLineEdit(QLineEdit):
-    """Qt的QLineEdit类复写，拖入文件后将控件文本设置为拖入文件所属的文件夹路径/拖入文件夹的路径"""
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setAcceptDrops(True)  # 设置可拖入
-
-    def dragEnterEvent(self, event: QDragEnterEvent):
-        if event.mimeData().hasUrls():
-            event.acceptProposedAction()
-
-    def dropEvent(self, event: QDropEvent):
-        urls = event.mimeData().urls()
-        if urls:
-            path = urls[0].toLocalFile()  # 获取路径
-            if os.path.isdir(path):
-                self.setText(path)
-            elif os.path.isfile(path):
-                self.setText(os.path.split(path)[0])
-                # self.setText(path)
-
-
 # 文件操作类
 def get_all_files_under_folder(folder: str) -> list:
     """获取文件夹下的所有文件路径
@@ -63,6 +10,7 @@ def get_all_files_under_folder(folder: str) -> list:
 
     all_files：所有文件路径，list类型
     """
+    import os
     all_files = []
     for root, directories, files in os.walk(folder):
         for filename in files:
@@ -84,6 +32,7 @@ def find_first_folder_with_multiple_files(folder: str) -> str:
 
     first_folder：符合条件的文件夹路径，str类型
     """
+    import os
     if len(os.listdir(folder)) == 1:
         if os.path.isfile(os.path.join(folder, os.listdir(folder)[0])):  # 如果文件夹下只有一个文件，并且是文件
             first_folder = os.path.join(folder, os.listdir(folder)[0])
@@ -109,6 +58,7 @@ def rename_without_duplication(filepath: str, folder: str) -> str:
 
     new_filename：新的文件名，str类型
     """
+    import os
     filetitle = os.path.split(os.path.splitext(filepath)[0])[1]
     suffix = os.path.splitext(filepath)[1]
     count = 1
@@ -129,6 +79,7 @@ def is_zip_file(filepath: str) -> bool:
 
     返回：bool值
     """
+    import magic
     zip_type = ['application/x-rar', 'application/x-gzip', 'application/x-tar', 'application/zip',
                 'application/x-lzh-compressed', 'application/x-7z-compressed', 'application/x-xz',
                 'application/octet-stream', 'application/x-dosexec']
@@ -150,6 +101,8 @@ def get_zip_title(filepath: str) -> str:
 
     zip_name:提取的文件名（不含后缀），如果不符合正则返回空，str类型
     """
+    import re
+    import os
     filename = os.path.split(filepath)[1]
     re_rar = r"^(.+)\.part\d+\.rar$"  # 4种压缩文件的命名规则
     re_7z = r"^(.+)\.7z\.\d+$"
@@ -179,6 +132,7 @@ def get_files_size(filepaths: list) -> int:
 
     total_size：输入文件的总大小（byte），int类型
     """
+    import os
     total_size = 0
     for file in filepaths:
         total_size += os.path.getsize(file)
@@ -196,6 +150,7 @@ def get_folder_size(folder: str) -> int:
 
     total_size：文件夹的大小（byte），int类型
     """
+    import os
     folder_size = 0
     for dirpath, dirnames, filenames in os.walk(folder):
         for item in filenames:
@@ -243,4 +198,5 @@ def get_time(style: str = '%Y-%m-%d %H:%M:%S') -> str:
 
     返回：结构化的当前时间
     """
+    import time
     return time.strftime(style, time.localtime())
