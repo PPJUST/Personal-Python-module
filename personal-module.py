@@ -62,9 +62,11 @@ def rename_without_duplication(filepath: str, folder: str) -> str:
     filetitle = os.path.split(os.path.splitext(filepath)[0])[1]
     suffix = os.path.splitext(filepath)[1]
     count = 1
+    all_filename = os.listdir(folder) + os.listdir(os.path.split(filepath)[0])
+    all_filename = [x.upper() for x in all_filename]  # 转大写，防止大小写匹配不到
     while True:
         new_filename = f"{filetitle} - new{count}{suffix}"
-        if new_filename not in os.listdir(folder):
+        if new_filename.upper() not in all_filename:
             return new_filename
         else:
             count += 1
