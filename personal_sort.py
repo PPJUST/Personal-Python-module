@@ -7,6 +7,11 @@
 只排序了部分字符
 """
 
+import os
+import natsort
+import locale
+import re
+
 def windows_sorted(dirpath: str, model: str) -> list:
     """输入路径、模式，返回Windows排序规则的列表
 
@@ -19,10 +24,7 @@ def windows_sorted(dirpath: str, model: str) -> list:
     返回：排序后的列表；如果路径、处理模式不正确则返回提示文本
 
     """
-    import os
-    import natsort
-    import locale
-    import re
+
     # 遍历路径文件
     if os.path.exists(dirpath) and os.path.isdir(dirpath):
         files_list = os.listdir(dirpath)
