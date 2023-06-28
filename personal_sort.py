@@ -12,53 +12,60 @@ import natsort
 import locale
 import re
 
-def windows_sorted(dirpath: str, model: str) -> list:
+
+def windows_sorted(dirpath_or_filelist: str or list, model: str) -> list:
     """输入路径、模式，返回Windows排序规则的列表
 
-    输入:dirpath, model
+    输入:dirpath_or_filelist, model
 
-    dirpath：目标文件夹路径，str类型
+    dirpath_or_filelist：目标文件夹路径，str类型；或者一个文件列表，list类型
 
     model：处理模式（'file'：排序文件；'folder'：排序文件夹；'both'：排序文件和文件夹）
 
     返回：排序后的列表；如果路径、处理模式不正确则返回提示文本
 
     """
+    fullpath_files_list = []  # 设置一个空列表变量
+    if type(dirpath_or_filelist) is str:
+        dirpath = dirpath_or_filelist
 
-    # 遍历路径文件
-    if os.path.exists(dirpath) and os.path.isdir(dirpath):
-        files_list = os.listdir(dirpath)
+        # 遍历路径文件
+        if os.path.exists(dirpath) and os.path.isdir(dirpath):
+            files_list = os.listdir(dirpath)
 
-        # 组合完整路径
-        fullpath_files_list = []
-        for i in files_list:
-            fullpath_files_list.append(os.path.join(dirpath, i))
-
-        # 分离文件与文件夹
-        fullpath_files = []
-        fullpath_folders = []
-        for i in fullpath_files_list:
-            if os.path.isfile(i):
-                fullpath_files.append(i)
-            else:
-                fullpath_folders.append(i)
-
-        # 按model传递参数
-        if model == 'file':
-            result = run_sorted_file(fullpath_files)
-            return result
-        elif model == 'folder':
-            result = run_sorted_folder(fullpath_folders)
-            return result
-        elif model == 'both':
-            result1 = run_sorted_folder(fullpath_folders)
-            result2 = run_sorted_file(fullpath_files)
-            result = result1 + result2
-            return result
+            # 组合完整路径
+            for i in files_list:
+                fullpath_files_list.append(os.path.join(dirpath, i))
         else:
-            return 'model设置不正确，可用项为file/folder/both'
+            return "路径不存在或者不是文件夹"
+    elif type(dirpath_or_filelist) is list:
+        fullpath_files_list = dirpath_or_filelist
     else:
-        return "路径不存在或者不是文件夹"
+        return "输入变量的格式错误，不是文件夹路径或者文件列表"
+
+    # 分离文件与文件夹
+    fullpath_files = []
+    fullpath_folders = []
+    for i in fullpath_files_list:
+        if os.path.isfile(i):
+            fullpath_files.append(i)
+        else:
+            fullpath_folders.append(i)
+
+    # 按model传递参数
+    if model == 'file':
+        result = run_sorted_file(fullpath_files)
+        return result
+    elif model == 'folder':
+        result = run_sorted_folder(fullpath_folders)
+        return result
+    elif model == 'both':
+        result1 = run_sorted_folder(fullpath_folders)
+        result2 = run_sorted_file(fullpath_files)
+        result = result1 + result2
+        return result
+    else:
+        return 'model设置不正确，可用项为file/folder/both'
 
 
 def run_sorted_file(fullpath_files):
